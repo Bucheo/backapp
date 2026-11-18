@@ -13,5 +13,6 @@ KST = timezone(timedelta(hours=9)) # UTC+9
 
 class Default(Base):
     __tablename__ = "defaults"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
 
 
