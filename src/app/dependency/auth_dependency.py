@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import Response, Request, HTTPException, status
 
-from app.schema.member_schema import MemberClaimDTO
+from app.schema.user_schema import UserClaimDTO
 from app.schema.auth_schema import JwtTokenDTO
 from app.util.jwt_token_util import parse_token
 
@@ -10,7 +10,7 @@ from app.util.jwt_token_util import parse_token
 # 토큰을 디코드해서 payload가 필요하다.
 # 한 번에 처리하자!
 # 1. request -> access_token -> decode -> member_claims
-def get_current_member(request: Request) -> MemberClaimDTO:
+def get_current_member(request: Request) -> UserClaimDTO:
     access_token = request.cookies.get("access_token")
 
     if not access_token:
