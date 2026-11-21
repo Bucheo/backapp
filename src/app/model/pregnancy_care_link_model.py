@@ -13,14 +13,14 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class PregnancyCareLink(Base):
-    __tablename__ = "pregnancy_care_links"
+    __tablename__ = "pregnancy_care_links"  # 임신·병원·의료진 연결
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
-    pcl_link_code: Mapped[str | None] = mapped_column(String(128))  # 연결 코드
-    pcl_link_code_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)  # 연결 코드 만료 일시
-    pcl_approved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 산모 승인 일시
-    pcl_status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # 연결 상태
-    pcl_revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 연결 해제 일시
+    preg_care_link_code: Mapped[str | None] = mapped_column(String(128), nullable=False)  # 연결 코드
+    preg_care_link_code_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)  # 연결 코드 만료 일시
+    preg_care_link_approved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 산모 승인 일시
+    preg_care_link_status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)  # 연결 상태
+    preg_care_link_revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 연결 해제 일시
 
     # 관계
     pregnancy_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("pregnancies.id"), nullable=False)  # 외래키 (FK)

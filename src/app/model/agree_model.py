@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class Agree(Base):
-    __tablename__ = "agrees"
+    __tablename__ = "agrees"  # 약관 동의
 
     agree_terms_agreed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 서비스 약관 동의 일시
     agree_terms_version: Mapped[str] = mapped_column(String(40), nullable=False)  # 서비스 약관 버전

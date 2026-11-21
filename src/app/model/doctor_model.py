@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, String, Text, Identity, ForeignKey
+from sqlalchemy import BigInteger, String, Text, Boolean, Identity, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # PostgreSQL의 Base를 상속받아서 서버가 켜질 때 동기화시킨다.
@@ -12,14 +12,14 @@ if TYPE_CHECKING:
     from app.model.pregnancy_end_request_model import PregnancyEndRequest
 
 class Doctor(Base):
-    __tablename__ = "doctors"
+    __tablename__ = "doctors"  # 의료진
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     doctor_name: Mapped[str] = mapped_column(String(40), nullable=False)  # 실명
     doctor_profession: Mapped[str] = mapped_column(String(40), nullable=False)  # 의료진 직종(분야)
     doctor_license_number: Mapped[str | None] = mapped_column(String(100))  # 면허번호
     doctor_verification_file_key: Mapped[str | None] = mapped_column(Text)  # 증빙 파일 식별자
-    doctor_verification_status: Mapped[str] = mapped_column(String(40), nullable=False)  # 자격 검증 상태
+    doctor_verification_status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # 자격 검증 상태
     doctor_hospital: Mapped[str] = mapped_column(Text, nullable=False)  # 소속 병원명
 
     # 관계

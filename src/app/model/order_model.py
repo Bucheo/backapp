@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class Order(Base):
-    __tablename__ = "orders"
+    __tablename__ = "orders"  # 주문
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     order_quantity: Mapped[int] = mapped_column(Integer, nullable=False)  # 주문수량

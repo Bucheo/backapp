@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class Comment(Base):
-    __tablename__ = "comments"
+    __tablename__ = "comments"  # 댓글
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     comment_content: Mapped[str] = mapped_column(Text, nullable=False)  # 댓글 내용

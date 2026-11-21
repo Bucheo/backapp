@@ -18,14 +18,14 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "users"  # 회원
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     user_provider: Mapped[str] = mapped_column(String(40), nullable=False)  # 소셜 로그인 제공자 (GOOGLE, NAVER, KAKAO)
     user_provider_id: Mapped[str] = mapped_column(String(255), nullable=False)  # 제공자 회원 ID
     user_nickname: Mapped[str] = mapped_column(String(40), nullable=False)  # 닉네임
     user_phone: Mapped[str] = mapped_column(String(20), nullable=False)  # 전화번호
-    user_status: Mapped[str] = mapped_column(Boolean, nullable=False)  # 계정 상태 (True, False)
+    user_status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)  # 계정 상태 (True, False)
     user_created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 가입 일시
     user_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 탈퇴 일시
     user_type: Mapped[str] = mapped_column(String(10), nullable=False)  # 회원 타입 (DOCTOR, GENERAL)

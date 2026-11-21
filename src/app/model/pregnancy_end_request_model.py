@@ -11,13 +11,13 @@ if TYPE_CHECKING:
     from app.model.doctor_model import Doctor
 
 class PregnancyEndRequest(Base):
-    __tablename__ = "pregnancy_end_requests"
+    __tablename__ = "pregnancy_end_requests"  # 임신 종료 신청
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
-    per_outcome: Mapped[str] = mapped_column(String(40), nullable=False)  # 종료 종류 (조산, 유산, 만삭)
-    per_ended_on: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)  # 종료 날짜
-    per_status: Mapped[str] = mapped_column(String(40), nullable=False)  # 신청 상태 (수락, 반려, 검토중)
-    per_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 종료 확정 일시
+    preg_end_request_outcome: Mapped[str] = mapped_column(String(40), nullable=False)  # 종료 종류 (조산, 유산, 만삭)
+    preg_end_request_ended_on: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)  # 종료 날짜
+    preg_end_request_status: Mapped[str] = mapped_column(String(40), nullable=False)  # 신청 상태 (수락, 반려, 검토중)
+    preg_end_request_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 종료 확정 일시
 
     # 관계
     pregnancy_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("pregnancies.id"), nullable=False)  # 외래키 (FK)

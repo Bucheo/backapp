@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class PregnancyRiskVO(BaseModel):
     id: int
 
-    pregnancy_risks_premature_birth_risk: str | None = None
-    pregnancy_risks_health_risk: str | None = None
+    preg_risk_premature_birth_risk: str | None = None
+    preg_risk_health_risk: str | None = None
 
     prenatal_record_id: int

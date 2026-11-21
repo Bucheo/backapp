@@ -8,7 +8,7 @@ class DoctorVO(BaseModel):
     doctor_profession: str
     doctor_license_number: str | None = None
     doctor_verification_file_key: str | None = None
-    doctor_verification_status: str
+    doctor_verification_status: bool
     doctor_hospital: str
 
     user_id: int
