@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from app.enum.pregnancy_enum import PregnancyStatus
 
 # VO (ERD 테이블: pregnancies / 임신 정보)
 class PregnancyVO(BaseModel):
@@ -11,7 +12,7 @@ class PregnancyVO(BaseModel):
     pregnancy_gestational_weeks: int
     pregnancy_gestational_reference: datetime | None = None
     pregnancy_due_date: datetime | None = None
-    pregnancy_status: str
+    pregnancy_status: PregnancyStatus
     pregnancy_ended_on: datetime | None = None
     pregnancy_code: str
 
