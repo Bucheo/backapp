@@ -5,3 +5,8 @@ class UserProvider(str, Enum):  # enum으로 각 provider에 해당하는 타입
     GOOGLE = "GOOGLE"
     KAKAO = "KAKAO"
     NAVER = "NAVER"
+
+
+class UserType(str, Enum):
+    GENERAL = "GENENRAL"
+    DOCTOR = "DOCTOR"

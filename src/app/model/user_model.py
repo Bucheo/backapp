@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import BigInteger, String, DateTime, Identity
+from sqlalchemy import BigInteger, String, DateTime, Identity, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # PostgreSQL의 Base를 상속받아서 서버가 켜질 때 동기화시킨다.
@@ -25,7 +25,7 @@ class User(Base):
     user_provider_id: Mapped[str] = mapped_column(String(255), nullable=False)  # 제공자 회원 ID
     user_nickname: Mapped[str] = mapped_column(String(40), nullable=False)  # 닉네임
     user_phone: Mapped[str] = mapped_column(String(20), nullable=False)  # 전화번호
-    user_status: Mapped[str] = mapped_column(String(40), nullable=False)  # 계정 상태 (ACTIVE, DEACTIVE)
+    user_status: Mapped[str] = mapped_column(Boolean, nullable=False)  # 계정 상태 (True, False)
     user_created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 가입 일시
     user_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 탈퇴 일시
     user_type: Mapped[str] = mapped_column(String(10), nullable=False)  # 회원 타입 (DOCTOR, GENERAL)
