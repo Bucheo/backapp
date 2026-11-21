@@ -7,7 +7,7 @@ class HospitalVO(BaseModel):
     hospital_latitude: int
     hospital_longitude: int
     hospital_registration_file_key: str
+    hospital_name: str
     hospital_address: str
     hospital_phone: str
-    hospital_opening_hours: str
     hospital_night_service: bool

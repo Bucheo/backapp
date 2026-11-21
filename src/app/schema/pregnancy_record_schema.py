@@ -10,4 +10,4 @@ class PregnancyRecordVO(BaseModel):
     preg_record_survey_version: str | None = None
     preg_record_survey_answers: str | None = None
 
-    user_id: int
+    pregnancy_id: int
