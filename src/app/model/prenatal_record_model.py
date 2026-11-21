@@ -14,13 +14,13 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class PrenatalRecord(Base):
-    __tablename__ = "prenatal_records"
+    __tablename__ = "prenatal_records"  # 병원 검진 기록
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     pren_record_visited_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)  # 검진 일시
     pren_record_confirmed_due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 병원 확인 출산 예정일
     pren_record_examination_notes: Mapped[str | None] = mapped_column(Text)  # 검진 내용
-    pren_record_ehg: Mapped[str | None] = mapped_column(Text)  # EHG 수치 (ERD 타입 미정 - Text로 임시 지정)
+    pren_record_ehg: Mapped[str | None] = mapped_column(Text)  # EHG 수치 (ERD 타입 미정 - 추후 따로 ehg 타입 생성 예정)
     pren_record_test_results: Mapped[str | None] = mapped_column(Text)  # 검사 결과
     pren_record_created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 작성 일시
 

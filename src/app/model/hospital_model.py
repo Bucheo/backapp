@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.infrastructure.postgresql import Base
 
 class Hospital(Base):
-    __tablename__ = "hospitals"
+    __tablename__ = "hospitals"  # 병원
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     hospital_latitude: Mapped[int] = mapped_column(Integer, nullable=False)  # 위도

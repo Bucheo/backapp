@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from app.model.prenatal_record_model import PrenatalRecord
 
 class PregnancyRisk(Base):
-    __tablename__ = "pregnancy_risks"
+    __tablename__ = "pregnancy_risks"  # AI 위험도 예측
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     pregnancy_risks_premature_birth_risk: Mapped[str | None] = mapped_column(String(20))  # 조산 위험도

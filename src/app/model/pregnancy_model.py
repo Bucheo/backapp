@@ -17,12 +17,12 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class Pregnancy(Base):
-    __tablename__ = "pregnancies"
+    __tablename__ = "pregnancies"  # 임신 정보
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     pregnancy_baby_nickname: Mapped[str] = mapped_column(String(100), nullable=False)  # 태명
-    pregnancy_previous_pregnancy: Mapped[int | None] = mapped_column(Integer)  # 이전 임신 횟수
-    pregnancy_previous_birth: Mapped[int | None] = mapped_column(Integer)  # 이전 출산 횟수
+    pregnancy_previous_pregnancy: Mapped[int] = mapped_column(Integer, nullable=False, default=0)  # 이전 임신 횟수
+    pregnancy_previous_birth: Mapped[int] = mapped_column(Integer, nullable=False, default=0)  # 이전 출산 횟수
     pregnancy_gestational_weeks: Mapped[int] = mapped_column(SmallInteger, nullable=False)  # 등록 당시 임신 주수
     pregnancy_gestational_reference: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 임신 주수 기준일
     pregnancy_due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 출산 예정일

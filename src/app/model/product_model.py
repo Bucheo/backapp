@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from app.model.order_model import Order
 
 class Product(Base):
-    __tablename__ = "products"
+    __tablename__ = "products"  # 상품
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     name: Mapped[str] = mapped_column(String(200), nullable=False)  # 상품명
@@ -17,8 +17,8 @@ class Product(Base):
     product_description: Mapped[str | None] = mapped_column(Text)  # 상품 설명
     product_image_url: Mapped[str | None] = mapped_column(Text)  # 상품 이미지 주소
     product_seller: Mapped[str] = mapped_column(String(160), nullable=False)  # 판매처
-    product_external_url: Mapped[str] = mapped_column(Text, nullable=False)  # 외부 판매 주소
-    product_is_visible: Mapped[bool] = mapped_column(Boolean, nullable=False)  # 노출 여부
+    product_external_url: Mapped[str | None] = mapped_column(Text)  # 외부 판매 주소
+    product_is_visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # 노출 여부
     product_price: Mapped[int] = mapped_column(Integer, nullable=False)  # 상품 가격
 
     # 관계

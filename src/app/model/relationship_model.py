@@ -13,12 +13,12 @@ if TYPE_CHECKING:
 KST = timezone(timedelta(hours=9))  # UTC+9
 
 class Relationship(Base):
-    __tablename__ = "relationship"
+    __tablename__ = "relationship"  # 임신·보호자 연결
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     relationship_status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # 승인 상태
     relationship_access_scope: Mapped[str] = mapped_column(String(120), nullable=False)  # 기록 열람 범위
-    relationship_approved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 승인 일시
+    relationship_approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 승인 일시(산모 최종 승인 시점에 자동 갱신)
     relationship_revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 관계 해제 일시
 
     # 관계

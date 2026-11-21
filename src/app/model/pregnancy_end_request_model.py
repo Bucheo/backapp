@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from app.model.doctor_model import Doctor
 
 class PregnancyEndRequest(Base):
-    __tablename__ = "pregnancy_end_requests"
+    __tablename__ = "pregnancy_end_requests"  # 임신 종료 신청
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
     per_outcome: Mapped[str] = mapped_column(String(40), nullable=False)  # 종료 종류 (조산, 유산, 만삭)
