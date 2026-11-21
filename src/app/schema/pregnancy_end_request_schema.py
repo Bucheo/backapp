@@ -5,10 +5,10 @@ from datetime import datetime
 class PregnancyEndRequestVO(BaseModel):
     id: int
 
-    per_outcome: str
-    per_ended_on: datetime
-    per_status: str
-    per_confirmed_at: datetime | None = None
+    preg_end_request_outcome: str
+    preg_end_request_ended_on: datetime
+    preg_end_request_status: str
+    preg_end_request_confirmed_at: datetime | None = None
 
     pregnancy_id: int
     doctor_id: int
