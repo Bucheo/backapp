@@ -21,6 +21,7 @@ class User(Base):
     __tablename__ = "users"  # 회원
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
+    user_name: Mapped[str] = mapped_column(String(40), nullable=False)  # 실명
     user_provider: Mapped[str] = mapped_column(String(40), nullable=False)  # 소셜 로그인 제공자 (GOOGLE, NAVER, KAKAO)
     user_provider_id: Mapped[str] = mapped_column(String(255), nullable=False)  # 제공자 회원 ID
     user_email: Mapped[str] = mapped_column(String(255), nullable=False)  # 이메일
