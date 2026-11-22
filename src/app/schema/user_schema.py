@@ -6,8 +6,10 @@ from app.enum.user_enum import UserProvider, UserType
 class UserVO(BaseModel):
     id: int
 
+    user_name: str
     user_provider: UserProvider
     user_provider_id: str
+    user_email: str
     user_nickname: str
     user_phone: str
     user_status: bool
@@ -21,6 +23,7 @@ class UserVO(BaseModel):
 class UserCreateDTO(BaseModel):
     user_provider: UserProvider
     user_provider_id: str
+    user_name: str
     user_nickname: str
     user_phone: str
     user_type: UserType
@@ -41,6 +44,7 @@ class UserUpdateDTO(BaseModel):
 # 3. 회원 정보 응답
 class UserResponseDTO(BaseModel):
     id: int
+    user_name: str
     user_provider: UserProvider
     user_provider_id: str
     user_email: str
