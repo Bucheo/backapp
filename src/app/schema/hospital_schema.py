@@ -5,8 +5,8 @@ from app.enum.hospital_enum import HospitalTypeEnum
 class HospitalVO(BaseModel):
     id: int
 
-    hospital_latitude: int
-    hospital_longitude: int
+    hospital_latitude: float
+    hospital_longitude: float
     hospital_type: HospitalTypeEnum
     hospital_name: str
     hospital_address: str

@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta, datetime, timezone
 from jose import jwt, JWTError
-from app.schema.member_schema import MemberClaimDTO
+from app.schema.user_schema import UserClaimDTO
 
 load_dotenv()
 
@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
 # 1. access_token 생성하는 함수
-def generate_access_token(member_claim: MemberClaimDTO) -> str:
+def generate_access_token(member_claim: UserClaimDTO) -> str:
     # dto -> dict
     claims = member_claim.model_dump() 
 
@@ -28,7 +28,7 @@ def generate_access_token(member_claim: MemberClaimDTO) -> str:
     return access_token
 
 # 2. refresh_token 생성하는 함수
-def generate_refresh_token(member_claim: MemberClaimDTO) -> str:
+def generate_refresh_token(member_claim: UserClaimDTO) -> str:
     # dto -> dict
     claims = member_claim.model_dump() 
 
@@ -46,19 +46,11 @@ def generate_refresh_token(member_claim: MemberClaimDTO) -> str:
     return refresh_token
 
 # 3. token_parsing 함수 (token -> user_info)
-def parse_token(token: str) -> MemberClaimDTO:
+def parse_token(token: str) -> UserClaimDTO:
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    member_id = payload["id"]
-    member_email = payload["member_email"]
-    member_provider = payload["member_provider"]
 
-    # MemberClaimDTO.model_validate(payload)
-
-    return MemberClaimDTO(
-        id=member_id,
-        member_email=member_email,
-        member_provider=member_provider
-    )
+    # 토큰 payload: {id, user_provider, exp}
+    return UserClaimDTO.model_validate(payload)
 
 
 # 4. refresh_token을 이용해서 access_token 재발급
