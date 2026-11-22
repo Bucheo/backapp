@@ -1,14 +1,16 @@
 import os
 import httpx
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
 
 from app.enum.user_enum import UserProvider
 from app.schema.auth_schema import JwtTokenDTO, SocialJoinRequestDTO
 from app.schema.common_schema import ApiResponseDTO
+from app.schema.user_schema import UserClaimDTO
 from app.service.auth_service import AuthService, get_auth_service
+from app.dependency.auth_dependency import get_current_member, get_tokens
 
 load_dotenv()
 router = APIRouter()
@@ -108,10 +110,8 @@ def _set_auth_cookies(response: Response, tokens: JwtTokenDTO) -> None:
     )
 
 
-# 1. 소셜 로그인 시작 -> 제공자 로그인 페이지로 리다이렉트
-# GET /auth/social/{provider}
-@router.get("/social/{user_provider}", summary="소셜 로그인 리다이렉트")
-async def social_login(user_provider: UserProvider):
+# 제공자 로그인 페이지로 리다이렉트
+def _redirect_to_provider(user_provider: UserProvider) -> RedirectResponse:
     config = SOCIAL_PROVIDERS[user_provider]
 
     params = {
@@ -126,14 +126,8 @@ async def social_login(user_provider: UserProvider):
     return RedirectResponse(url)
 
 
-# 2. 소셜 로그인 콜백 -> 기존 회원이면 로그인, 신규 회원이면 추가정보 입력 페이지로
-# GET /auth/social/{provider}/callback
-@router.get("/social/{user_provider}/callback", summary="소셜 로그인 콜백")
-async def social_login_callback(
-    user_provider: UserProvider,
-    code: str,
-    auth_service: AuthService = Depends(get_auth_service)
-):
+# 콜백 공통 처리 -> 기존 회원이면 로그인, 신규 회원이면 추가정보 입력 페이지로
+async def _handle_callback(user_provider: UserProvider, code: str, auth_service: AuthService):
     provider_id = await _get_provider_id(user_provider, code)
 
     tokens = await auth_service.social_login_or_none(user_provider, provider_id)
@@ -150,7 +144,56 @@ async def social_login_callback(
     return RedirectResponse(url=f"{FRONTEND_URL}/join-additional?{query}")
 
 
-# 3. 추가정보 입력 후 최초 가입 -> 토큰 발급
+# ---------- 구글 ----------
+# GET /auth/google
+@router.get("/google", summary="구글 로그인")
+async def google_login():
+    return _redirect_to_provider(UserProvider.GOOGLE)
+
+
+# GET /auth/google/callback
+@router.get("/google/callback", summary="구글 로그인 콜백")
+async def google_login_callback(
+    code: str,
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    return await _handle_callback(UserProvider.GOOGLE, code, auth_service)
+
+
+# ---------- 카카오 ----------
+# GET /auth/kakao
+@router.get("/kakao", summary="카카오 로그인 리다이렉트")
+async def kakao_login():
+    return _redirect_to_provider(UserProvider.KAKAO)
+
+
+# GET /auth/kakao/callback
+@router.get("/kakao/callback", summary="카카오 로그인 콜백")
+async def kakao_login_callback(
+    code: str,
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    return await _handle_callback(UserProvider.KAKAO, code, auth_service)
+
+
+# ---------- 네이버 ----------
+# GET /auth/naver
+@router.get("/naver", summary="네이버 로그인 리다이렉트")
+async def naver_login():
+    return _redirect_to_provider(UserProvider.NAVER)
+
+
+# GET /auth/naver/callback
+@router.get("/naver/callback", summary="네이버 로그인 콜백")
+async def naver_login_callback(
+    code: str,
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    return await _handle_callback(UserProvider.NAVER, code, auth_service)
+
+
+# ---------- 추가정보 입력 ----------
+# 추가정보 입력 후 최초 가입 -> 토큰 발급
 # POST /auth/social/join
 @router.post(
     "/social/join",
@@ -168,4 +211,70 @@ async def social_join(
     return ApiResponseDTO(
         success=True,
         message="회원가입 성공"
+    )
+
+
+# ---------- 로그아웃 / 토큰 재발급 ----------
+# 로그아웃: access_token 블랙리스트 + refresh_token 삭제 + 쿠키 제거
+# POST /auth/logout
+@router.post(
+    "/logout",
+    response_model=ApiResponseDTO,
+    summary="로그아웃"
+)
+async def logout(
+    response: Response,
+    user_claims: UserClaimDTO = Depends(get_current_member),
+    tokens: JwtTokenDTO = Depends(get_tokens),
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    await auth_service.logout(user_claims.id, tokens)
+
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+
+    return ApiResponseDTO(
+        success=True,
+        message="로그아웃 성공"
+    )
+
+
+# 토큰 재발급: refresh_token 쿠키로 access_token 재발급
+# GET /auth/refresh
+@router.get(
+    "/refresh",
+    response_model=ApiResponseDTO,
+    summary="토큰 재발급"
+)
+async def refresh(
+    request: Request,
+    response: Response,
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    # access_token이 만료돼도 재발급은 가능해야 하므로 refresh_token 쿠키를 직접 읽는다
+    refresh_token = request.cookies.get("refresh_token")
+
+    try:
+        access_token = await auth_service.refresh(refresh_token)
+
+    except HTTPException:
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return ApiResponseDTO(
+            success=False,
+            message="Refresh Token 만료"
+        )
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=60 * 60 * 24
+    )
+
+    return ApiResponseDTO(
+        success=True,
+        message="Access Token 재발급 성공"
     )

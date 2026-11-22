@@ -11,11 +11,13 @@ from app.repository.user_repository import UserRepository, get_user_repository
 from app.enum.user_enum import UserProvider
 from app.schema.user_schema import UserCreateDTO, UserClaimDTO
 from app.schema.auth_schema import JwtTokenDTO, SocialJoinRequestDTO
+from app.util.jwt_token_util import parse_token, reissue_access_token
 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 REFRESH_TOKEN_PREFIX = os.getenv("REFRESH_TOKEN_PREFIX")
+TOKEN_BLACKLIST_PREFIX = os.getenv("TOKEN_BLACKLIST_PREFIX")
 
 # 추가정보 입력 전 임시 저장 (DB 저장 아님)
 SOCIAL_PENDING_PREFIX = "social_pending:"
@@ -118,6 +120,63 @@ class AuthService:
         await self.redis_repo.delete(key)
 
         return await self._issue_tokens(claims.id, claims.user_provider)
+
+
+    # redis에 저장된 refresh_token과 일치하는지 확인
+    async def validate_refresh_token(self, user_id: int, refresh_token: str) -> bool:
+        saved_token = await self.redis_repo.get(f"{REFRESH_TOKEN_PREFIX}{user_id}")
+        return saved_token is not None and refresh_token == saved_token
+
+
+    # redis에서 refresh_token 삭제
+    async def delete_refresh_token(self, user_id: int) -> None:
+        await self.redis_repo.delete(f"{REFRESH_TOKEN_PREFIX}{user_id}")
+
+
+    # access_token을 블랙리스트에 등록 (로그아웃)
+    async def save_blacklisted_token(self, access_token: str) -> None:
+        await self.redis_repo.set(
+            f"{TOKEN_BLACKLIST_PREFIX}{access_token}",
+            "blacklisted",
+            ex=60 * 60 * 24
+        )
+
+
+    # 블랙리스트 여부 확인 (True -> 사용 불가)
+    async def is_blacklisted_token(self, access_token: str) -> bool:
+        return await self.redis_repo.exists(f"{TOKEN_BLACKLIST_PREFIX}{access_token}")
+
+
+    # 로그아웃: access_token 블랙리스트 + refresh_token 삭제
+    async def logout(self, user_id: int, tokens: JwtTokenDTO) -> None:
+        if tokens.access_token:
+            await self.save_blacklisted_token(tokens.access_token)
+        await self.delete_refresh_token(user_id)
+
+
+    # refresh_token으로 access_token 재발급
+    async def refresh(self, refresh_token: str | None) -> str:
+        if not refresh_token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh Token이 없습니다."
+            )
+
+        try:
+            claims = parse_token(refresh_token)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="유효하지 않은 Refresh Token입니다."
+            )
+
+        if not await self.validate_refresh_token(claims.id, refresh_token):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="유효하지 않은 Refresh Token입니다."
+            )
+
+        return reissue_access_token(refresh_token)
 
 
 # 레포지토리 주입 팩토리 함수
