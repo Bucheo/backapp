@@ -4,7 +4,6 @@ from app.enum.user_enum import UserProvider, UserType
 # DTO
 class LoginRequestDTO(BaseModel):
     user_email: str
-    user_password: str | None = None
     user_provider: UserProvider | None = None
 
     class Config:
@@ -34,6 +33,7 @@ class SocialJoinRequestDTO(BaseModel):
     user_nickname: str
     user_phone: str
     user_type: UserType
+    user_name: str
 
     class Config:
         from_attributes = True
