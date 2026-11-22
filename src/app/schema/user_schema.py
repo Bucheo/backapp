@@ -43,6 +43,7 @@ class UserResponseDTO(BaseModel):
     id: int
     user_provider: UserProvider
     user_provider_id: str
+    user_email: str
     user_nickname: str
     user_phone: str
     user_status: bool
