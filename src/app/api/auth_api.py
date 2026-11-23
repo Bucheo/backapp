@@ -305,7 +305,7 @@ async def social_join(
         user_nickname=join_dto.user_nickname,
         user_phone=join_dto.user_phone,
         user_type=join_dto.user_type,
-    ))
+    ), join_dto.agree_terms, join_dto.agree_health_data)
 
     # 가입 성공 후에만 임시 정보 삭제 (실패 시 재시도 가능)
     await auth_service.delete_social_pending(join_dto.pending_token)

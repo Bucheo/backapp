@@ -4,6 +4,7 @@ from fastapi import Depends
 
 # 모델, ORM
 from app.model.user_model import User
+from app.model.agree_model import Agree
 from app.schema.user_schema import UserCreateDTO, UserClaimDTO
 from sqlalchemy import insert, select, update, delete, func, exists  # CRUD 순서
 
@@ -16,35 +17,6 @@ class UserRepository:
 
 
     # 순수 함수
-    # 회원가입
-    async def create_user(self, user: UserCreateDTO):
-        # pydantic -> dict
-        new_user = user.model_dump()
-        query = (
-            insert(User)
-            .values(**new_user)
-        ).returning(
-            User.id,
-            User.user_email,
-            User.user_provider
-        )
-
-        result = await self.db.execute(query)
-
-        # 필요한 값을 리턴(id, email, provider)
-        id, user_email, user_provider = result.first()
-        await self.db.commit()
-
-        payload = {
-            "id": id,
-            "user_email": user_email,
-            "user_provider": user_provider
-        }
-
-        # dict -> pydantic
-        claim_dto = UserClaimDTO.model_validate(payload)
-        return claim_dto
-
     # 1. 소셜 회원 조회(provider, provider_id)
     async def find_user_by_provider(self, user_provider: str, user_provider_id: str):
         query = (
@@ -90,7 +62,11 @@ class UserRepository:
 
 
     # 3. 소셜 회원가입 (소셜 로그인 + 추가정보 입력 후에만 호출)
-    async def create_user(self, new_user: UserCreateDTO) -> UserClaimDTO:
+    # agree_values가 있으면 users와 agrees를 하나의 트랜잭션으로 저장한다
+    # (둘 중 하나라도 실패하면 전체 롤백)
+    async def create_user(
+        self, new_user: UserCreateDTO, agree_values: dict | None = None
+    ) -> UserClaimDTO:
         # pydantic -> dict (enum은 문자열로 변환)
         values = new_user.model_dump(mode="json")
         query = (
@@ -101,9 +77,22 @@ class UserRepository:
             User.user_provider
         )
 
-        result = await self.db.execute(query)
-        # 필요한 값만 리턴(id, provider)
-        id, user_provider = result.first()
+        try:
+            result = await self.db.execute(query)
+            # 필요한 값만 리턴(id, provider)
+            id, user_provider = result.first()
+
+            # 약관 동의 저장 (agrees.user_id = 방금 생성된 users.id)
+            if agree_values is not None:
+                await self.db.execute(
+                    insert(Agree).values(user_id=id, **agree_values)
+                )
+
+            # users + agrees를 한 번에 커밋
+            await self.db.commit()
+        except Exception:
+            await self.db.rollback()
+            raise
 
         payload = {
             "id": id,
@@ -111,10 +100,7 @@ class UserRepository:
         }
 
         # dict -> pydantic
-        claim_dto = UserClaimDTO.model_validate(payload)
-
-        await self.db.commit()
-        return claim_dto
+        return UserClaimDTO.model_validate(payload)
 
 
     # 7. 회원 정보 수정
