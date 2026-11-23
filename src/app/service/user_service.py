@@ -8,6 +8,14 @@ from app.schema.common_schema import PageResponseDTO
 
 from app.util.security_util import get_password_hash
 import math
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# 현재 시행 중인 약관 버전 (약관 개정 시 .env 또는 기본값을 변경)
+TERMS_VERSION = os.getenv("TERMS_VERSION", "1.0")
+HEALTH_DATA_VERSION = os.getenv("HEALTH_DATA_VERSION", "1.0")
 
 
 # 예외처리, 서비스가 들어나도록 이름을 선정해서 제작
@@ -28,9 +36,22 @@ class UserService:
                 detail="이미 가입된 회원입니다."
             )
 
-    async def join(self, user: UserCreateDTO) -> UserClaimDTO:
+    # 필수 약관 동의 후 가입: users + agrees를 함께 저장
+    # 동의 일시는 agrees 모델의 default(KST 현재 시각), 버전은 서버의 현재 시행 버전
+    async def join(
+        self, user: UserCreateDTO, agree_terms: bool, agree_health_data: bool
+    ) -> UserClaimDTO:
+        if not (agree_terms and agree_health_data):
+            raise HTTPException(
+                status_code=400,
+                detail="필수 약관에 모두 동의해야 가입할 수 있습니다."
+            )
+
         await self.check_duplicate_user(user.user_email, user.user_provider)
-        return await self.repo.create_user(user)
+        return await self.repo.create_user(user, {
+            "agree_terms_version": TERMS_VERSION,
+            "agree_health_data_version": HEALTH_DATA_VERSION,
+        })
 
 
     # 회원 조회(id)

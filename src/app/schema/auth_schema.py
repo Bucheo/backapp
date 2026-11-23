@@ -34,6 +34,9 @@ class SocialJoinRequestDTO(BaseModel):
     user_phone: str
     user_type: UserType
     user_name: str
+    # 필수 약관 동의 (둘 다 True여야 가입 가능, 서버에서 다시 검증)
+    agree_terms: bool
+    agree_health_data: bool
 
     class Config:
         from_attributes = True
