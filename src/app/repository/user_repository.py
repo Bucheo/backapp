@@ -60,13 +60,12 @@ class UserRepository:
         return found_user
 
 
-    async def find_user_by_email_and_provider(self, user_email:str, user_provider: str, user_provider_id: str):
+    async def find_user_by_email_and_provider(self, user_email:str, user_provider: str):
         query = (
             select(User)
                 .where(
                     User.user_email == user_email,
                     User.user_provider == user_provider,
-                    User.user_provider_id == user_provider_id
                 )
         )
 

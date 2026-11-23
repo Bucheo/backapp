@@ -19,9 +19,18 @@ class UserService:
 
 
     # 회원 가입
+    # 중복 회원 검사 (이메일 + 제공자 기준). 중복이면 409
+    async def check_duplicate_user(self, user_email: str, user_provider: str) -> None:
+        exists_user = await self.repo.find_user_by_email_and_provider(user_email, user_provider)
+        if exists_user:
+            raise HTTPException(
+                status_code=409,
+                detail="이미 가입된 회원입니다."
+            )
+
     async def join(self, user: UserCreateDTO) -> UserClaimDTO:
         await self.check_duplicate_user(user.user_email, user.user_provider)
-
+        return await self.repo.create_user(user)
 
 
     # 회원 조회(id)

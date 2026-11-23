@@ -84,37 +84,46 @@ class AuthService:
         return await self.redis_repo.exists(key)
 
 
-    # 소셜 로그인(회원가입)
-    async def social_login_or_join(self, social_user: SocialLoginRequestDTO) -> JwtTokenDTO | None:
+    # 비회원 소셜 정보를 redis에 임시 저장하고 pending_token 발급 (10분)
+    async def save_social_pending(self, user_params: dict) -> str:
+        pending_token = secrets.token_urlsafe(32)
+        await self.redis_repo.set(
+            f"{SOCIAL_PENDING_PREFIX}{pending_token}",
+            json.dumps(user_params),
+            ex=SOCIAL_PENDING_EX,
+        )
+        return pending_token
 
-        user_email = social_user.user_email
-        user_provider = social_user.user_provider
-        user_provider_id = social_user.user_provider_id
+    # pending_token으로 임시 저장된 소셜 정보 조회 (없거나 만료되면 None)
+    async def get_social_pending(self, pending_token: str) -> dict | None:
+        raw = await self.redis_repo.get(f"{SOCIAL_PENDING_PREFIX}{pending_token}")
+        if raw is None:
+            return None
+        return json.loads(raw)
 
+    # 가입이 끝난 뒤 임시 정보 삭제 (1회용)
+    async def delete_social_pending(self, pending_token: str) -> None:
+        await self.redis_repo.delete(f"{SOCIAL_PENDING_PREFIX}{pending_token}")
+
+
+    async def social_login_or_none(self, social_user: SocialLoginRequestDTO) -> JwtTokenDTO | None:
         user_in_db = await self.user_service.get_user_by_email_and_provider(
             social_user.user_email,
             social_user.user_provider
         )
 
         if not user_in_db:
-            new_user = UserCreateDTO(
-                user_provider_id=user_provider_id,
-                user_provider=user_provider,
-                user_email=user_email
-            )
-            claims = await self.user_service.join(new_user)
-            user_id = claims.id
+            return None
 
-        else:
-            user_id = int(user_in_db.id)
-            user_email=str(user_in_db.user_email)
-            user_provider=str(user_in_db.user_provider)
+        user_id = int(user_in_db.id)
+        user_email=str(user_in_db.user_email)
+        user_provider=str(user_in_db.user_provider)
 
-            claims = UserClaimDTO(
-                id=user_id,
-                user_email=user_email,
-                user_provider=user_provider
-            )
+        claims = UserClaimDTO(
+            id=user_id,
+            user_email=user_email,
+            user_provider=user_provider
+        )
 
         access_token = generate_access_token(claims)
         refresh_token = generate_refresh_token(claims)
@@ -127,9 +136,32 @@ class AuthService:
 
 
 
+    # refresh_token으로 access_token 재발급
+    # redis에 저장된 refresh_token과 일치해야 재발급한다
+    async def refresh(self, refresh_token: str) -> str:
+        claims = parse_token(refresh_token)
+
+        if not await self.validate_refresh_token(claims.id, refresh_token):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="유효하지 않은 refresh_token 입니다."
+            )
+
+        return generate_access_token(claims)
+
+
+    # 로그아웃: access_token 블랙리스트 등록 + refresh_token 삭제
+    async def logout(self, user_id: int, tokens: JwtTokenDTO) -> None:
+        if tokens.access_token:
+            await self.save_blacklisted_token(tokens.access_token)
+
+        await self.delete_refresh_token(user_id)
+
+
+
 # 레포지토리 주입 팩토리 함수
 def get_auth_service(
     redis_repo: RedisRepository = Depends(get_redis_repository),
-    user_repo: UserRepository = Depends(get_user_repository)
+    user_repo: UserService = Depends(get_user_service)
 ):
     return AuthService(redis_repo, user_repo)

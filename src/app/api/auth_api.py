@@ -1,11 +1,12 @@
 import os
 from dotenv import load_dotenv
-from fastapi import APIRouter, Query, Depends, Response
+from fastapi import APIRouter, Query, Depends, Response, HTTPException
 from app.schema.common_schema import ApiResponseDTO
-from app.schema.user_schema import UserClaimDTO
+from app.schema.user_schema import UserClaimDTO, UserCreateDTO
 from app.enum.user_enum import UserProvider
-from app.schema.auth_schema import JwtTokenDTO, LoginRequestDTO, SocialLoginRequestDTO
+from app.schema.auth_schema import JwtTokenDTO, LoginRequestDTO, SocialLoginRequestDTO, SocialJoinRequestDTO
 from app.service.auth_service import AuthService, get_auth_service
+from app.service.user_service import UserService, get_user_service
 from app.dependency.auth_dependency import get_current_user, get_tokens
 
 # 소셜 로그인용
@@ -211,7 +212,7 @@ async def naver_login_callback(
             "user_provider_id": user_profile_id
         }
 
-    return await _handle_social_login_or_join(user_params, auth_service) 
+    return await _handle_social_login(user_params, auth_service)
 
 
 # 로그아웃
@@ -276,13 +277,53 @@ async def refresh(
 
 
 
+# 소셜 추가정보 입력 후 회원가입
+# /auth/social/join
+# 소셜 정보는 콜백에서 저장한 pending_token으로만 확인합니다 (클라이언트 값 신뢰 X)
+@router.post(
+    "/social/join",
+    summary="소셜 추가정보 입력 후 회원가입",
+    response_model=ApiResponseDTO,
+)
+async def social_join(
+    join_dto: SocialJoinRequestDTO,
+    auth_service: AuthService = Depends(get_auth_service),
+    user_service: UserService = Depends(get_user_service),
+):
+    pending = await auth_service.get_social_pending(join_dto.pending_token)
+    if not pending:
+        raise HTTPException(
+            status_code=400,
+            detail="추가 정보 입력 시간이 만료되었거나 잘못된 요청입니다. 다시 로그인해 주세요."
+        )
+
+    await user_service.join(UserCreateDTO(
+        user_provider=pending["user_provider"],
+        user_provider_id=pending["user_provider_id"],
+        user_email=pending["user_email"],
+        user_name=join_dto.user_name,
+        user_nickname=join_dto.user_nickname,
+        user_phone=join_dto.user_phone,
+        user_type=join_dto.user_type,
+    ))
+
+    # 가입 성공 후에만 임시 정보 삭제 (실패 시 재시도 가능)
+    await auth_service.delete_social_pending(join_dto.pending_token)
+
+    return ApiResponseDTO(
+        success=True,
+        message="회원가입 성공"
+    )
+
+
 async def _handle_social_login(user_params: dict, auth_service: AuthService):
     social_user = SocialLoginRequestDTO.model_validate(user_params)
     tokens = await auth_service.social_login_or_none(social_user)
 
-    # 비회원
+    # 비회원: 소셜 정보를 임시 저장하고 pending_token과 함께 추가정보 입력 페이지로 이동
     if not tokens:
-        url = f"{FRONTEND_URL}/join-additional?{urlencode(user_params)}"
+        pending_token = await auth_service.save_social_pending(user_params)
+        url = f"{FRONTEND_URL}/onboarding?{urlencode({**user_params, 'pending_token': pending_token})}"
         return RedirectResponse(url)
 
     # 기존 회원 
@@ -312,33 +353,6 @@ async def _handle_social_login(user_params: dict, auth_service: AuthService):
 
 
 
-async def _handle_social_login_or_join(user_params: dict, auth_service: AuthService):
-    social_user = SocialLoginRequestDTO.model_validate(user_params)
-    tokens = await auth_service.social_login_or_join(social_user)
-
-    access_token = tokens.access_token
-    refresh_token = tokens.refresh_token
-
-    redirect_response = RedirectResponse(url=FRONTEND_URL)
-    redirect_response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=60 * 60 * 24 
-    )
-
-    redirect_response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=60 * 60 * 24 * 30
-    )
-
-    return redirect_response
 
 
 
