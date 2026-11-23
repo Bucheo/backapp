@@ -4,7 +4,6 @@ from app.enum.user_enum import UserProvider, UserType
 # DTO
 class LoginRequestDTO(BaseModel):
     user_email: str
-    user_password: str | None = None
     user_provider: UserProvider | None = None
 
     class Config:
@@ -34,6 +33,10 @@ class SocialJoinRequestDTO(BaseModel):
     user_nickname: str
     user_phone: str
     user_type: UserType
+    user_name: str
+    # 필수 약관 동의 (둘 다 True여야 가입 가능, 서버에서 다시 검증)
+    agree_terms: bool
+    agree_health_data: bool
 
     class Config:
         from_attributes = True

@@ -23,6 +23,7 @@ class UserVO(BaseModel):
 class UserCreateDTO(BaseModel):
     user_provider: UserProvider
     user_provider_id: str
+    user_email: str
     user_name: str
     user_nickname: str
     user_phone: str
