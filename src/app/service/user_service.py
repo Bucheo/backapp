@@ -42,12 +42,20 @@ class UserService:
         self, user: UserCreateDTO, agree_terms: bool, agree_health_data: bool
     ) -> UserClaimDTO:
 
+        # 화면의 체크 여부와 별개로 서버에서도 필수 동의를 검사합니다.
+        if not agree_terms or not agree_health_data:
+            raise HTTPException(status_code=400, detail="필수 약관에 동의해야 가입할 수 있습니다.")
+
         await self.check_duplicate_user(user.user_email, user.user_provider)
         return await self.repo.create_user(user, {
             "agree_terms_version": TERMS_VERSION,
             "agree_health_data_version": HEALTH_DATA_VERSION,
         })
 
+
+    # 일반 사용자 OAuth 로그인에서 사용합니다. 미가입자는 None을 반환합니다.
+    async def get_user_by_email_and_provider(self, user_email: str, user_provider: str):
+        return await self.repo.find_user_by_email_and_provider(user_email, user_provider)
 
     # 회원 조회(id)
     async def get_user_by_id(self, id: int):

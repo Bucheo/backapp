@@ -48,7 +48,7 @@ async def pending(request: Request, service: DoctorAuthService = Depends(get_doc
 async def cancel_pending(request: Request, service: DoctorAuthService = Depends(get_doctor_auth_service)):
     check_origin(request)
     await service.clear("pending", request.cookies.get(PENDING_COOKIE))
-    response = JSONResponse({"success": True, "message": "추가정보 입력 취소"})
+    response = JSONResponse(ApiResponseDTO(success=True, message="추가정보 입력 취소").model_dump(mode="json"))
     clear_cookie(response, PENDING_COOKIE)
     return no_store(response)
 
@@ -57,7 +57,7 @@ async def cancel_pending(request: Request, service: DoctorAuthService = Depends(
 async def logout(request: Request, service: DoctorAuthService = Depends(get_doctor_auth_service)):
     check_origin(request)
     await service.clear("session", request.cookies.get(SESSION_COOKIE))
-    response = JSONResponse({"success": True, "message": "의료진 로그아웃"})
+    response = JSONResponse(ApiResponseDTO(success=True, message="의료진 로그아웃").model_dump(mode="json"))
     clear_cookie(response, SESSION_COOKIE)
     return no_store(response)
 
