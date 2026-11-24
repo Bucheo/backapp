@@ -30,7 +30,6 @@ class User(Base):
     user_status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)  # 계정 상태 (True, False)
     user_created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 가입 일시
     user_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 탈퇴 일시
-    user_type: Mapped[str] = mapped_column(String(10), nullable=False)  # 회원 타입 (DOCTOR, GENERAL)
 
     # 관계
     # cascade: User가 삭제되면 참조된 테이블을 모두 같이 연쇄삭제
