@@ -15,7 +15,6 @@ class UserVO(BaseModel):
     user_status: bool
     user_created_at: datetime
     user_deleted_at: datetime | None = None
-    user_type: UserType
 
 
 # DTO
@@ -27,7 +26,6 @@ class UserCreateDTO(BaseModel):
     user_name: str
     user_nickname: str
     user_phone: str
-    user_type: UserType
 
     class Config:
         from_attributes = True
@@ -53,7 +51,6 @@ class UserResponseDTO(BaseModel):
     user_phone: str
     user_status: bool
     user_created_at: datetime
-    user_type: UserType
 
     class Config:
         from_attributes = True

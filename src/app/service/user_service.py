@@ -41,11 +41,6 @@ class UserService:
     async def join(
         self, user: UserCreateDTO, agree_terms: bool, agree_health_data: bool
     ) -> UserClaimDTO:
-        if not (agree_terms and agree_health_data):
-            raise HTTPException(
-                status_code=400,
-                detail="필수 약관에 모두 동의해야 가입할 수 있습니다."
-            )
 
         await self.check_duplicate_user(user.user_email, user.user_provider)
         return await self.repo.create_user(user, {
