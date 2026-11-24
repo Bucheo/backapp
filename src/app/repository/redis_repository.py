@@ -15,6 +15,9 @@ class RedisRepository:
     async def get(self, key: str) -> str | None:
         return await self.redis_client.get(key)
 
+    async def getdel(self, key: str) -> str | None:
+        return await self.redis_client.getdel(key)
+
     async def exists(self, key: str) -> bool:
         result = await self.redis_client.exists(key)
         return result > 0
