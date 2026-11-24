@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.enum.user_enum import UserProvider, UserType
+from app.enum.user_enum import UserProvider
 
 # DTO
 class LoginRequestDTO(BaseModel):
@@ -32,7 +32,6 @@ class SocialJoinRequestDTO(BaseModel):
     pending_token: str
     user_nickname: str
     user_phone: str
-    user_type: UserType
     user_name: str
     # 필수 약관 동의 (둘 다 True여야 가입 가능, 서버에서 다시 검증)
     agree_terms: bool

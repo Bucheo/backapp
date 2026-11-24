@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from app.enum.user_enum import UserProvider, UserType
-
+from app.enum.user_enum import UserProvider
 # VO (ERD 테이블: users / 회원)
 class UserVO(BaseModel):
     id: int
