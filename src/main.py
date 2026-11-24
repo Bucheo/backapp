@@ -6,7 +6,7 @@ from app.infrastructure.postgresql import engine, Base
 from app.infrastructure.redis import start_redis_client
 from app.infrastructure.s3 import start_s3_client
 import app.model
-from app.api import ai_api, auth_api, map_api, prenatal_record_api, user_api, doctor_api, babyshop_api, community_api, pregnancy_api, s3_api
+from app.api import doctor_auth_api, ai_api, auth_api, map_api, prenatal_record_api, user_api, doctor_api, babyshop_api, community_api, pregnancy_api, s3_api
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -50,3 +50,5 @@ app.include_router(babyshop_api.router, prefix="/babyshop", tags=["babyshop"])
 app.include_router(community_api.router, prefix="/communities", tags=["communities"])
 app.include_router(pregnancy_api.router, prefix="/pregnancies", tags=["pregnancies"])
 app.include_router(s3_api.router, prefix="/s3", tags=["s3"])
+# 일반 회원 OAuth와 별도로 의료진 전용 로그인·콜백을 제공합니다.
+app.include_router(doctor_auth_api.router, prefix="/doctors/auth", tags=["doctor-auth"])
