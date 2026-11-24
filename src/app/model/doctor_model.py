@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from app.model.prenatal_record_model import PrenatalRecord
     from app.model.pregnancy_end_request_model import PregnancyEndRequest
 
+KST = timezone(timedelta(hours=9))  # UTC+9
+
 class Doctor(Base):
     __tablename__ = "doctors"  # 의료진
 
