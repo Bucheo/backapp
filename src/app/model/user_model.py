@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from app.model.comment_model import Comment
     from app.model.pregnancy_model import Pregnancy
     from app.model.relationship_model import Relationship
-    from app.model.doctor_model import Doctor
     from app.model.order_model import Order
 
 KST = timezone(timedelta(hours=9))  # UTC+9
@@ -38,5 +37,4 @@ class User(Base):
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
     pregnancies: Mapped[list["Pregnancy"]] = relationship("Pregnancy", back_populates="user", cascade="all, delete-orphan")
     relationships: Mapped[list["Relationship"]] = relationship("Relationship", back_populates="user", cascade="all, delete-orphan")
-    doctors: Mapped[list["Doctor"]] = relationship("Doctor", back_populates="user", cascade="all, delete-orphan")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user", cascade="all, delete-orphan")
