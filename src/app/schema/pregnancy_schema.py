@@ -17,7 +17,18 @@ class PregnancyVO(BaseModel):
 
     user_id: int
 
-class CreatePregnancyDTO:
+class PregnancyCreateDTO:
     pregnancy_previous_pregnancy: int = 0
     pregnancy_previous_birth: int = 0
     pregnancy_gestational_weeks: int
+    pregnancy_gestational_reference: datetime | None = None
+    pregnancy_due_date: datetime | None = None
+
+
+class PregnancyUpdateDTO:
+    pregnancy_previous_pregnancy: int = 0
+    pregnancy_previous_birth: int = 0
+    pregnancy_gestational_weeks: int
+    pregnancy_gestational_reference: datetime | None = None
+    pregnancy_due_date: datetime | None = None
+    pregnancy_status: PregnancyStatus
