@@ -12,5 +12,5 @@ class PrenatalRecordVO(BaseModel):
     pren_record_test_results: str | None = None
     pren_record_created_at: datetime
 
-    pregnancy_id: int
+    fetus_id: int
     doctor_id: int

@@ -7,7 +7,7 @@ class RelationshipVO(BaseModel):
 
     relationship_status: bool
     relationship_access_scope: str
-    relationship_approved_at: datetime
+    relationship_approved_at: datetime | None = None
     relationship_revoked_at: datetime | None = None
 
     pregnancy_id: int

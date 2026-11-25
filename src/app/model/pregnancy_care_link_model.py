@@ -16,7 +16,7 @@ class PregnancyCareLink(Base):
     __tablename__ = "pregnancy_care_links"  # 임신·병원·의료진 연결
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)  # 기본키 (PK)
-    preg_care_link_code: Mapped[str | None] = mapped_column(String(128), nullable=False)  # 연결 코드
+    preg_care_link_code: Mapped[str] = mapped_column(String(128), nullable=False)  # 연결 코드
     preg_care_link_code_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)  # 연결 코드 만료 일시
     preg_care_link_approved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 산모 승인 일시
     preg_care_link_status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)  # 연결 상태

@@ -6,9 +6,8 @@ from app.enum.pregnancy_enum import PregnancyStatus
 class PregnancyVO(BaseModel):
     id: int
 
-    pregnancy_baby_nickname: str
-    pregnancy_previous_pregnancy: int | None = None
-    pregnancy_previous_birth: int | None = None
+    pregnancy_previous_pregnancy: int = 0
+    pregnancy_previous_birth: int = 0
     pregnancy_gestational_weeks: int
     pregnancy_gestational_reference: datetime | None = None
     pregnancy_due_date: datetime | None = None

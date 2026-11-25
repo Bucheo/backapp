@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.model.pregnancy_care_link_model import PregnancyCareLink
     from app.model.prenatal_record_model import PrenatalRecord
     from app.model.pregnancy_end_request_model import PregnancyEndRequest
+    from app.model.reservation_model import Reservation
 
 KST = timezone(timedelta(hours=9))  # UTC+9
 
@@ -36,3 +37,4 @@ class Doctor(Base):
     pregnancy_care_links: Mapped[list["PregnancyCareLink"]] = relationship("PregnancyCareLink", back_populates="doctor", cascade="all, delete-orphan")
     prenatal_records: Mapped[list["PrenatalRecord"]] = relationship("PrenatalRecord", back_populates="doctor", cascade="all, delete-orphan")
     pregnancy_end_requests: Mapped[list["PregnancyEndRequest"]] = relationship("PregnancyEndRequest", back_populates="doctor", cascade="all, delete-orphan")
+    reservations: Mapped[list["Reservation"]] = relationship("Reservation", back_populates="doctor")

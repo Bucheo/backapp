@@ -6,6 +6,7 @@ from .post_model import Post
 from .comment_model import Comment
 from .relationship_model import Relationship
 from .pregnancy_model import Pregnancy
+from .fetus_model import Fetus
 from .pregnancy_record_model import PregnancyRecord
 from .prenatal_record_model import PrenatalRecord
 from .pregnancy_risk_model import PregnancyRisk
@@ -13,5 +14,6 @@ from .pregnancy_end_request_model import PregnancyEndRequest
 from .pregnancy_care_link_model import PregnancyCareLink
 from .doctor_model import Doctor
 from .hospital_model import Hospital
+from .reservation_model import Reservation
 from .order_model import Order
 from .product_model import Product

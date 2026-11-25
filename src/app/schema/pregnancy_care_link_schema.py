@@ -5,7 +5,7 @@ from datetime import datetime
 class PregnancyCareLinkVO(BaseModel):
     id: int
 
-    preg_care_link_code: str | None = None
+    preg_care_link_code: str
     preg_care_link_code_expires_at: datetime
     preg_care_link_approved_at: datetime
     preg_care_link_status: bool
