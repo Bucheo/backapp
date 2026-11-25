@@ -16,3 +16,8 @@ class PregnancyVO(BaseModel):
     pregnancy_code: str
 
     user_id: int
+
+class CreatePregnancyDTO:
+    pregnancy_previous_pregnancy: int = 0
+    pregnancy_previous_birth: int = 0
+    pregnancy_gestational_weeks: int
