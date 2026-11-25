@@ -14,5 +14,6 @@ from .pregnancy_end_request_model import PregnancyEndRequest
 from .pregnancy_care_link_model import PregnancyCareLink
 from .doctor_model import Doctor
 from .hospital_model import Hospital
+from .reservation_model import Reservation
 from .order_model import Order
 from .product_model import Product

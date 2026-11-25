@@ -11,5 +11,5 @@ class PregnancyEndRequestVO(BaseModel):
     preg_end_request_status: PregEndRequestStatus
     preg_end_request_confirmed_at: datetime | None = None
 
-    pregnancy_id: int
+    fetus_id: int
     doctor_id: int

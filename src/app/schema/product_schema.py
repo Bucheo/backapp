@@ -9,6 +9,6 @@ class ProductVO(BaseModel):
     product_description: str | None = None
     product_image_url: str | None = None
     product_seller: str
-    product_external_url: str
+    product_external_url: str | None = None
     product_is_visible: bool
     product_price: int

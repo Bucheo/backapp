@@ -7,7 +7,7 @@ from app.infrastructure.postgresql import Base
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.model.pregnancy_model import Pregnancy
+    from app.model.fetus_model import Fetus
     from app.model.doctor_model import Doctor
     from app.model.pregnancy_risk_model import PregnancyRisk
 
@@ -25,8 +25,8 @@ class PrenatalRecord(Base):
     pren_record_created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 작성 일시
 
     # 관계
-    pregnancy_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("pregnancies.id"), nullable=False)  # 외래키 (FK)
+    fetus_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("fetuses.id"), nullable=False)  # 외래키 (FK)
     doctor_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("doctors.id"), nullable=False)  # 외래키 (FK)
-    pregnancy: Mapped["Pregnancy"] = relationship("Pregnancy", back_populates="prenatal_records")
+    fetus: Mapped["Fetus"] = relationship("Fetus", back_populates="prenatal_records")
     doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="prenatal_records")
     pregnancy_risks: Mapped[list["PregnancyRisk"]] = relationship("PregnancyRisk", back_populates="prenatal_record", cascade="all, delete-orphan")

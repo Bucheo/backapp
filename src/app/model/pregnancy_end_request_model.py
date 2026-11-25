@@ -7,7 +7,7 @@ from app.infrastructure.postgresql import Base
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.model.pregnancy_model import Pregnancy
+    from app.model.fetus_model import Fetus
     from app.model.doctor_model import Doctor
 
 class PregnancyEndRequest(Base):
@@ -20,7 +20,7 @@ class PregnancyEndRequest(Base):
     preg_end_request_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 종료 확정 일시
 
     # 관계
-    pregnancy_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("pregnancies.id"), nullable=False)  # 외래키 (FK)
+    fetus_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("fetuses.id"), nullable=False)  # 외래키 (FK)
     doctor_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("doctors.id"), nullable=False)  # 외래키 (FK)
-    pregnancy: Mapped["Pregnancy"] = relationship("Pregnancy", back_populates="pregnancy_end_requests")
+    fetus: Mapped["Fetus"] = relationship("Fetus", back_populates="pregnancy_end_requests")
     doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="pregnancy_end_requests")

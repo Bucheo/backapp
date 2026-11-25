@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.model.pregnancy_model import Pregnancy
+    from app.model.prenatal_record_model import PrenatalRecord
+    from app.model.pregnancy_end_request_model import PregnancyEndRequest
 
 class Fetus(Base):
     __tablename__ = "fetuses"  # 태아 정보
@@ -18,3 +20,5 @@ class Fetus(Base):
     # 관계
     pregnancy_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("pregnancies.id"), nullable=False)  # 외래키 (FK)
     pregnancy: Mapped["Pregnancy"] = relationship("Pregnancy", back_populates="fetuses")
+    prenatal_records: Mapped[list["PrenatalRecord"]] = relationship("PrenatalRecord", back_populates="fetus", cascade="all, delete-orphan")
+    pregnancy_end_requests: Mapped[list["PregnancyEndRequest"]] = relationship("PregnancyEndRequest", back_populates="fetus", cascade="all, delete-orphan")

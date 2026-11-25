@@ -6,8 +6,8 @@ class PregnancyRecordVO(BaseModel):
     id: int
 
     preg_record_date: datetime
-    preg_record_symptom_content: str | None = None
-    preg_record_survey_version: str | None = None
-    preg_record_survey_answers: str | None = None
+    preg_record_symptom_content: str
+    preg_record_survey_version: str
+    preg_record_survey_answers: str
 
     pregnancy_id: int

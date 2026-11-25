@@ -10,10 +10,9 @@ if TYPE_CHECKING:
     from app.model.user_model import User
     from app.model.relationship_model import Relationship
     from app.model.pregnancy_care_link_model import PregnancyCareLink
-    from app.model.prenatal_record_model import PrenatalRecord
-    from app.model.pregnancy_end_request_model import PregnancyEndRequest
     from app.model.pregnancy_record_model import PregnancyRecord
     from app.model.fetus_model import Fetus
+    from app.model.reservation_model import Reservation
 
 KST = timezone(timedelta(hours=9))  # UTC+9
 
@@ -35,7 +34,6 @@ class Pregnancy(Base):
     user: Mapped["User"] = relationship("User", back_populates="pregnancies")
     relationships: Mapped[list["Relationship"]] = relationship("Relationship", back_populates="pregnancy", cascade="all, delete-orphan")
     pregnancy_care_links: Mapped[list["PregnancyCareLink"]] = relationship("PregnancyCareLink", back_populates="pregnancy", cascade="all, delete-orphan")
-    prenatal_records: Mapped[list["PrenatalRecord"]] = relationship("PrenatalRecord", back_populates="pregnancy", cascade="all, delete-orphan")
-    pregnancy_end_requests: Mapped[list["PregnancyEndRequest"]] = relationship("PregnancyEndRequest", back_populates="pregnancy", cascade="all, delete-orphan")
     pregnancy_records: Mapped[list["PregnancyRecord"]] = relationship("PregnancyRecord", back_populates="pregnancy", cascade="all, delete-orphan")
     fetuses: Mapped[list["Fetus"]] = relationship("Fetus", back_populates="pregnancy", cascade="all, delete-orphan")
+    reservations: Mapped[list["Reservation"]] = relationship("Reservation", back_populates="pregnancy")
