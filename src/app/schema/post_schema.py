@@ -1,18 +1,20 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
 from datetime import datetime
+from app.enum.post_enum import PostStatus, PostWriterType, PostCategory
 
 # VO (ERD 테이블: posts / 게시글)
 class PostVO(BaseModel):
     id: int
 
-    post_category: str
+    post_category: PostCategory
     post_title: str
     post_content: str
-    post_status: str
+    post_status: PostStatus
     post_created_at: datetime
     post_updated_at: datetime | None = None
     post_like: int
+    post_writer_type: PostWriterType
 
     user_id: int
 

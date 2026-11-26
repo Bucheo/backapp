@@ -2,6 +2,7 @@ import math
 
 from fastapi import Depends, HTTPException, status
 
+from app.enum.post_enum import PostStatus, PostWriterType
 from app.model.post_model import Post
 from app.model.post_extra_model import PostExtra, PostPhoto
 from app.repository.community_repository import CommunityRepository, get_community_repository
@@ -12,7 +13,8 @@ from app.schema.post_schema import (
 
 
 def _author_tag(category: str) -> str:
-    return "육아맘" if category == "parenting" else "예비맘"
+    writer_type = PostWriterType.PARENTING_MOM if category == "parenting" else PostWriterType.EXPECTANT_MOM
+    return writer_type.value
 
 
 class CommunityService:
@@ -24,7 +26,8 @@ class CommunityService:
             post_category=dto.category,
             post_title=dto.title,
             post_content=dto.content,
-            post_status="게시중",
+            post_status=PostStatus.POSTING.value,
+            post_writer_type=_author_tag(dto.category),  # 카테고리 기준 작성자 타입 (육아맘/예비맘)
             user_id=user_id,
         )
         extra = PostExtra(

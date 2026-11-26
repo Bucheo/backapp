@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from app.model.pregnancy_record_model import PregnancyRecord
     from app.model.fetus_model import Fetus
     from app.model.reservation_model import Reservation
+    from app.model.calender_model import Calender
 
 KST = timezone(timedelta(hours=9))  # UTC+9
 
@@ -37,3 +38,4 @@ class Pregnancy(Base):
     pregnancy_records: Mapped[list["PregnancyRecord"]] = relationship("PregnancyRecord", back_populates="pregnancy", cascade="all, delete-orphan")
     fetuses: Mapped[list["Fetus"]] = relationship("Fetus", back_populates="pregnancy", cascade="all, delete-orphan")
     reservations: Mapped[list["Reservation"]] = relationship("Reservation", back_populates="pregnancy")
+    calenders: Mapped[list["Calender"]] = relationship("Calender", back_populates="pregnancy", cascade="all, delete-orphan")
