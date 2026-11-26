@@ -8,6 +8,8 @@ from .relationship_model import Relationship
 from .pregnancy_model import Pregnancy
 from .fetus_model import Fetus
 from .pregnancy_record_model import PregnancyRecord
+from .pregnancy_symptom_model import PregnancySymptom
+from .calender_model import Calender
 from .prenatal_record_model import PrenatalRecord
 from .pregnancy_risk_model import PregnancyRisk
 from .pregnancy_end_request_model import PregnancyEndRequest

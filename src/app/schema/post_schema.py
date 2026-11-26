@@ -1,18 +1,20 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 from datetime import datetime
+from app.enum.post_enum import PostStatus, PostWriterType, PostCategory
 
 # VO (ERD 테이블: posts / 게시글)
 class PostVO(BaseModel):
     id: int
 
-    post_category: str
+    post_category: PostCategory
     post_title: str
     post_content: str
-    post_status: str
+    post_status: PostStatus
     post_created_at: datetime
     post_updated_at: datetime | None = None
     post_like: int
+    post_writer_type: PostWriterType
 
     user_id: int
 
@@ -20,7 +22,16 @@ class PostVO(BaseModel):
 # ---------------------------------------------------------------------------
 # 커뮤니티 게시글 API DTO (프론트와 camelCase 로 주고받는다)
 # ---------------------------------------------------------------------------
-POST_CATEGORIES = ("pregnancy", "parenting", "neighborhood", "health", "living")
+# 프론트가 쓰는 게시판 값 -> DB(PostCategory enum) 값
+CATEGORY_TO_ENUM = {
+    "pregnancy": PostCategory.PREGNANCY_STORY,
+    "parenting": PostCategory.PARENTING_STORY,
+    "neighborhood": PostCategory.NEIGHBORHOOD,
+    "health": PostCategory.HEALTH,
+    "living": PostCategory.LIVELIHOOD,
+}
+ENUM_TO_CATEGORY = {enum.value: key for key, enum in CATEGORY_TO_ENUM.items()}
+POST_CATEGORIES = tuple(CATEGORY_TO_ENUM.keys())
 # 게시판별 말머리 (프론트 _constants/write.ts 의 BOARD_PREFIXES 와 같아야 한다)
 POST_PREFIXES_BY_CATEGORY = {
     "pregnancy": ("질문", "후기", "정보 공유", "일상"),

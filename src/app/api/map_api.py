@@ -16,7 +16,7 @@ router = APIRouter()
 )
 async def get_hospitals(
     hospital_type: HospitalTypeEnum | None = Query(
-        default=None, description="원본 종별: 상급종합병원, 종합병원, 병원, 의원, 조산원. 생략하면 전체 목록"
+        default=None, description="종별 코드: TERTIARY_GENERAL_HOSPITAL(상급종합병원), GENERAL_HOSPITAL(종합병원), HOSPITAL(병원), CLINIC(의원), MIDWIFERY_CENTER(조산원). 생략하면 전체 목록"
     ),
     service: HospitalService = Depends(get_hospital_service),
 ):

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from fastapi import Depends, HTTPException, status
 
+from app.enum.post_enum import PostCategory, PostStatus, PostWriterType
 from app.enum.s3_enum import S3Folder
 from app.model.comment_model import Comment
 from app.model.post_model import Post, KST
@@ -11,6 +12,7 @@ from app.repository.community_repository import CommunityRepository, get_communi
 from app.repository.redis_repository import RedisRepository, get_redis_repository
 from app.schema.comment_schema import CommentCreateDTO, CommentItemDTO
 from app.schema.post_schema import (
+    CATEGORY_TO_ENUM, ENUM_TO_CATEGORY,
     PostCreateDTO, PostFeedItemDTO, PostFeedListDTO, PostDetailDTO,
     PostVideoOutDTO, PostPlaceDTO, PostPollOutDTO, PostPollOptionOutDTO, PostLikeDTO,
     PostUpdateDTO, PostEditDTO, PostEditPhotoDTO, PostEditVideoDTO, PostEditPollDTO,
@@ -20,12 +22,26 @@ from app.service.s3_service import S3Service, get_s3_service
 VIEW_DEDUP_SECONDS = 60 * 60 * 24  # 같은 사람의 조회는 24시간에 1번만 센다
 VIEW_KEY_PREFIX = "post_view:"
 SECRET_COMMENT_TEXT = "비밀 댓글입니다."
-DELETED_STATUS = "삭제"  # 목록·상세는 "게시중" 만 보여 주므로, 상태를 바꾸면 화면에서 사라진다
 LEGACY_VIDEO_ID = 0  # post_extras 에 저장된 예전 글의 동영상
 
 
-def _author_tag(category: str) -> str:
-    return "육아맘" if category == "parenting" else "예비맘"
+WRITER_TYPE_LABELS = {
+    PostWriterType.GUARDIAN.value: "보호자",
+    PostWriterType.EXPECTANT_MOM.value: "예비맘",
+    PostWriterType.PARENTING_MOM.value: "육아맘",
+}
+
+
+# DB 카테고리(PostCategory 값) 기준 작성자 타입
+def _writer_type(db_category: str) -> str:
+    if db_category == PostCategory.PARENTING_STORY.value:
+        return PostWriterType.PARENTING_MOM.value
+    return PostWriterType.EXPECTANT_MOM.value
+
+
+# 화면에 보여줄 작성자 태그(한글)
+def _author_tag(db_category: str) -> str:
+    return WRITER_TYPE_LABELS[_writer_type(db_category)]
 
 
 class CommunityService:
@@ -41,11 +57,13 @@ class CommunityService:
         return await self.s3_service.get_view_url(key)
 
     async def create_post(self, user_id: int, dto: PostCreateDTO) -> int:
+        db_category = CATEGORY_TO_ENUM[dto.category].value
         post = Post(
-            post_category=dto.category,
+            post_category=db_category,
             post_title=dto.title,
             post_content=dto.content,
-            post_status="게시중",
+            post_status=PostStatus.POSTING.value,
+            post_writer_type=_writer_type(db_category),  # 카테고리 기준 작성자 타입
             user_id=user_id,
         )
         extra = PostExtra(
@@ -98,7 +116,7 @@ class CommunityService:
 
         return PostEditDTO(
             id=post.id,
-            category=post.post_category,
+            category=ENUM_TO_CATEGORY.get(post.post_category, post.post_category),
             prefix=extra.post_prefix if extra else "질문",
             title=post.post_title,
             content=post.post_content,
@@ -157,8 +175,10 @@ class CommunityService:
         if dto.poll:
             attachments.append(PostPollSetting(allow_multiple=allow_multiple))
 
+        db_category = CATEGORY_TO_ENUM[dto.category].value
         post_values = {
-            "post_category": dto.category,
+            "post_category": db_category,
+            "post_writer_type": _writer_type(db_category),
             "post_title": dto.title,
             "post_content": dto.content,
             "post_updated_at": datetime.now(KST),
@@ -168,7 +188,8 @@ class CommunityService:
     # 댓글·좋아요 기록이 남도록 행을 지우지 않고 상태만 바꾼다.
     async def delete_post(self, post_id: int, user_id: int) -> None:
         await self._require_owner(post_id, user_id)
-        await self.repo.set_post_status(post_id, DELETED_STATUS, datetime.now(KST))
+        # 목록·상세는 게시중(POSTING)만 보여 주므로, 상태를 바꾸면 화면에서 사라진다.
+        await self.repo.set_post_status(post_id, PostStatus.DELETED.value, datetime.now(KST))
 
     async def _get_place(self, post_id: int, extra: PostExtra | None) -> PostPlaceDTO | None:
         if not extra or not extra.place_name:
@@ -182,11 +203,12 @@ class CommunityService:
         )
 
     async def list_posts(self, category: str | None, sort: str, q: str, page: int, size: int) -> PostFeedListDTO:
-        rows, total = await self.repo.list_posts(category, sort, q.strip(), page, size)
+        db_category = CATEGORY_TO_ENUM[category].value if category in CATEGORY_TO_ENUM else category
+        rows, total = await self.repo.list_posts(db_category, sort, q.strip(), page, size)
         items = [
             PostFeedItemDTO(
                 id=post.id,
-                category=post.post_category,
+                category=ENUM_TO_CATEGORY.get(post.post_category, post.post_category),
                 author_tag=_author_tag(post.post_category),
                 title=post.post_title,
                 author_name=nickname,
@@ -239,7 +261,7 @@ class CommunityService:
 
         return PostDetailDTO(
             id=post.id,
-            category=post.post_category,
+            category=ENUM_TO_CATEGORY.get(post.post_category, post.post_category),
             author_tag=_author_tag(post.post_category),
             title=post.post_title,
             author_name=nickname,

@@ -23,6 +23,7 @@ class Post(Base):
     post_created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(KST))  # 작성 일시
     post_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # 수정 일시
     post_like: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)  # 좋아요 수
+    post_writer_type: Mapped[str] = mapped_column(Text, nullable=False)  # 작성자 타입 (보호자, 예비맘, 육아맘)
 
     # 관계
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)  # 외래키 (FK)

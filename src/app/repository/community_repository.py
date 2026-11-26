@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.postgresql import get_postgresql_db
+from app.enum.post_enum import PostStatus
 from app.model.post_model import Post
 from app.model.comment_model import Comment
 from app.model.user_model import User
@@ -91,7 +92,7 @@ class CommunityRepository:
                 .scalar_subquery()
             )
 
-        conditions = [Post.post_status == "게시중"]
+        conditions = [Post.post_status == PostStatus.POSTING.value]
         if category:
             conditions.append(Post.post_category == category)
         if q:
@@ -126,13 +127,13 @@ class CommunityRepository:
             await self.db.execute(
                 select(Post, User.user_nickname, _comment_count(), _view_count())
                 .join(User, User.id == Post.user_id)
-                .where(Post.id == post_id, Post.post_status == "게시중")
+                .where(Post.id == post_id, Post.post_status == PostStatus.POSTING.value)
             )
         ).first()
 
     # 조회수 1 증가. 게시중인 글이 없으면 False
     async def add_view(self, post_id: int) -> bool:
-        published = select(Post.id, literal(1)).where(Post.id == post_id, Post.post_status == "게시중")
+        published = select(Post.id, literal(1)).where(Post.id == post_id, Post.post_status == PostStatus.POSTING.value)
         statement = (
             insert(PostStat)
             .from_select(["post_id", "view_count"], published)
@@ -149,7 +150,7 @@ class CommunityRepository:
 
     # 게시중인 글의 작성자 id. 글이 없으면 None
     async def get_post_owner_id(self, post_id: int) -> int | None:
-        result = await self.db.execute(select(Post.user_id).where(Post.id == post_id, Post.post_status == "게시중"))
+        result = await self.db.execute(select(Post.user_id).where(Post.id == post_id, Post.post_status == PostStatus.POSTING.value))
         return result.scalar_one_or_none()
 
     async def get_like_count(self, post_id: int) -> int:
