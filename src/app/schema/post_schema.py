@@ -22,7 +22,16 @@ class PostVO(BaseModel):
 # ---------------------------------------------------------------------------
 # 커뮤니티 게시글 API DTO (프론트와 camelCase 로 주고받는다)
 # ---------------------------------------------------------------------------
-POST_CATEGORIES = ("pregnancy", "parenting", "neighborhood", "health", "living")
+# 프론트가 쓰는 게시판 값 -> DB(PostCategory enum) 값
+CATEGORY_TO_ENUM = {
+    "pregnancy": PostCategory.PREGNANCY_STORY,
+    "parenting": PostCategory.PARENTING_STORY,
+    "neighborhood": PostCategory.NEIGHBORHOOD,
+    "health": PostCategory.HEALTH,
+    "living": PostCategory.LIVELIHOOD,
+}
+ENUM_TO_CATEGORY = {enum.value: key for key, enum in CATEGORY_TO_ENUM.items()}
+POST_CATEGORIES = tuple(CATEGORY_TO_ENUM.keys())
 POST_PREFIXES = ("질문", "후기", "정보 공유", "일상")
 MAX_VIDEO_SECONDS = 60
 

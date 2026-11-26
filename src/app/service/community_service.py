@@ -2,19 +2,34 @@ import math
 
 from fastapi import Depends, HTTPException, status
 
-from app.enum.post_enum import PostStatus, PostWriterType
+from app.enum.post_enum import PostCategory, PostStatus, PostWriterType
 from app.model.post_model import Post
 from app.model.post_extra_model import PostExtra, PostPhoto
 from app.repository.community_repository import CommunityRepository, get_community_repository
 from app.schema.post_schema import (
+    CATEGORY_TO_ENUM, ENUM_TO_CATEGORY,
     PostCreateDTO, PostFeedItemDTO, PostFeedListDTO, PostDetailDTO,
     PostVideoOutDTO, PostPlaceDTO, PostPollOutDTO, PostPollOptionOutDTO,
 )
 
 
-def _author_tag(category: str) -> str:
-    writer_type = PostWriterType.PARENTING_MOM if category == "parenting" else PostWriterType.EXPECTANT_MOM
-    return writer_type.value
+WRITER_TYPE_LABELS = {
+    PostWriterType.GUARDIAN.value: "보호자",
+    PostWriterType.EXPECTANT_MOM.value: "예비맘",
+    PostWriterType.PARENTING_MOM.value: "육아맘",
+}
+
+
+# DB 카테고리(PostCategory 값) 기준 작성자 타입
+def _writer_type(db_category: str) -> str:
+    if db_category == PostCategory.PARENTING_STORY.value:
+        return PostWriterType.PARENTING_MOM.value
+    return PostWriterType.EXPECTANT_MOM.value
+
+
+# 화면에 보여줄 작성자 태그(한글)
+def _author_tag(db_category: str) -> str:
+    return WRITER_TYPE_LABELS[_writer_type(db_category)]
 
 
 class CommunityService:
@@ -22,12 +37,13 @@ class CommunityService:
         self.repo = repo
 
     async def create_post(self, user_id: int, dto: PostCreateDTO) -> int:
+        db_category = CATEGORY_TO_ENUM[dto.category].value
         post = Post(
-            post_category=dto.category,
+            post_category=db_category,
             post_title=dto.title,
             post_content=dto.content,
             post_status=PostStatus.POSTING.value,
-            post_writer_type=_author_tag(dto.category),  # 카테고리 기준 작성자 타입 (육아맘/예비맘)
+            post_writer_type=_writer_type(db_category),  # 카테고리 기준 작성자 타입
             user_id=user_id,
         )
         extra = PostExtra(
@@ -48,11 +64,12 @@ class CommunityService:
         return int(created.id)
 
     async def list_posts(self, category: str | None, sort: str, q: str, page: int, size: int) -> PostFeedListDTO:
-        rows, total = await self.repo.list_posts(category, sort, q.strip(), page, size)
+        db_category = CATEGORY_TO_ENUM[category].value if category in CATEGORY_TO_ENUM else category
+        rows, total = await self.repo.list_posts(db_category, sort, q.strip(), page, size)
         items = [
             PostFeedItemDTO(
                 id=post.id,
-                category=post.post_category,
+                category=ENUM_TO_CATEGORY.get(post.post_category, post.post_category),
                 author_tag=_author_tag(post.post_category),
                 title=post.post_title,
                 author_name=nickname,
@@ -96,7 +113,7 @@ class CommunityService:
 
         return PostDetailDTO(
             id=post.id,
-            category=post.post_category,
+            category=ENUM_TO_CATEGORY.get(post.post_category, post.post_category),
             author_tag=_author_tag(post.post_category),
             title=post.post_title,
             author_name=nickname,
