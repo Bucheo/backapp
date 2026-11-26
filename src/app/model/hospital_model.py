@@ -16,7 +16,6 @@ class Hospital(Base):
             HospitalTypeEnum,
             native_enum=False,
             values_callable=lambda kinds: [kind.value for kind in kinds],
-            length=13,
             validate_strings=True,
         ),
         nullable=False,
