@@ -12,4 +12,10 @@ class PostWriterType(str, Enum):
     EXPECTANT_MOM = "EXPECTANT_MOM"
     PARENTING_MOM = "PARENTING_MOM"
 
-class 
+# 게시글 카테고리 (ERD: 임신 이야기, 육아 이야기, 우리 동네, 건강/병원, 살림/추천)
+class PostCategory(str, Enum):
+    PREGNANCY_STORY = "PREGNANCY_STORY"
+    PARENTING_STORY = "PARENTING_STORY"
+    NEIGHBORHOOD = "NEIGHBORHOOD"
+    HEALTH = "HEALTH"
+    LIVELIHOOD = "LIVELIHOOD"
