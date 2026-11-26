@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.postgresql import get_postgresql_db
+from app.enum.post_enum import PostStatus
 from app.model.post_model import Post
 from app.model.comment_model import Comment
 from app.model.user_model import User
@@ -44,7 +45,7 @@ class CommunityRepository:
             .scalar_subquery()
         )
 
-        conditions = [Post.post_status == "게시중"]
+        conditions = [Post.post_status == PostStatus.POSTING.value]
         if category:
             conditions.append(Post.post_category == category)
         if q:
@@ -75,7 +76,7 @@ class CommunityRepository:
             await self.db.execute(
                 select(Post, User.user_nickname, _comment_count())
                 .join(User, User.id == Post.user_id)
-                .where(Post.id == post_id, Post.post_status == "게시중")
+                .where(Post.id == post_id, Post.post_status == PostStatus.POSTING.value)
             )
         ).first()
 
