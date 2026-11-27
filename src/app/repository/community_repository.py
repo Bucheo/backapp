@@ -111,7 +111,8 @@ class CommunityRepository:
             await self.db.execute(
                 select(
                     Post, User.user_nickname, _comment_count(),
-                    first_photo(PostPhoto.photo_key), first_photo(PostPhoto.photo_url), _view_count(),
+                    first_photo(PostPhoto.photo_key), first_photo(PostPhoto.photo_url), first_photo(PostPhoto.thumb_url),
+                    _view_count(),
                 )
                 .join(User, User.id == Post.user_id)
                 .where(*conditions)
