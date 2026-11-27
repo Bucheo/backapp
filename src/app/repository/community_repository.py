@@ -92,6 +92,8 @@ class CommunityRepository:
                 .scalar_subquery()
             )
 
+        prefix = select(PostExtra.post_prefix).where(PostExtra.post_id == Post.id).correlate(Post).scalar_subquery()
+
         conditions = [Post.post_status == PostStatus.POSTING.value]
         if category:
             conditions.append(Post.post_category == category)
@@ -113,6 +115,7 @@ class CommunityRepository:
                     Post, User.user_nickname, _comment_count(),
                     first_photo(PostPhoto.photo_key), first_photo(PostPhoto.photo_url), first_photo(PostPhoto.thumb_url),
                     _view_count(),
+                    prefix,
                 )
                 .join(User, User.id == Post.user_id)
                 .where(*conditions)

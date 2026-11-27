@@ -56,14 +56,6 @@ class CommunityService:
             return url
         return await self.s3_service.get_view_url(key)
 
-    # 목록 썸네일의 서명 URL. 썸네일은 URL 만 저장하므로 URL 에서 key 를 얻는다. 썸네일이 없으면 원본을 쓴다.
-    async def _list_thumbnail_url(self, thumb_url: str | None, photo_key: str | None, photo_url: str | None) -> str | None:
-        if not thumb_url:
-            return await self._view_url(photo_key, photo_url)
-        bucket_url = self.s3_service.get_url("")
-        key = thumb_url.removeprefix(bucket_url) if thumb_url.startswith(bucket_url) else None
-        return await self._view_url(key, thumb_url)
-
     async def create_post(self, user_id: int, dto: PostCreateDTO) -> int:
         db_category = CATEGORY_TO_ENUM[dto.category].value
         post = Post(
@@ -218,15 +210,18 @@ class CommunityService:
                 id=post.id,
                 category=ENUM_TO_CATEGORY.get(post.post_category, post.post_category),
                 author_tag=_author_tag(post.post_category),
+                # 부가 정보가 없는 예전 글은 상세 화면과 같은 기본값을 씁니다.
+                prefix=prefix or "질문",
                 title=post.post_title,
                 author_name=nickname,
-                thumbnail_url=await self._list_thumbnail_url(thumb_url, photo_key, photo_url),
+                # 100px 썸네일은 목록에서 흐려 보여 원본을 보낸다. 표시 크기에 맞추는 일은 프론트의 이미지 최적화가 맡는다.
+                thumbnail_url=await self._view_url(photo_key, photo_url),
                 like_count=post.post_like,
                 comment_count=comments,
                 view_count=views,
                 created_at=post.post_created_at,
             )
-            for post, nickname, comments, photo_key, photo_url, thumb_url, views in rows
+            for post, nickname, comments, photo_key, photo_url, _, views, prefix in rows
         ]
         return PostFeedListDTO(
             items=items,

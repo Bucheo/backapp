@@ -161,6 +161,7 @@ class PostFeedItemDTO(_CamelDTO):
     id: int
     category: str
     author_tag: str
+    prefix: str  # 말머리
     title: str
     author_name: str
     thumbnail_url: str | None = None
@@ -197,7 +198,6 @@ class PostPollOutDTO(_CamelDTO):
 
 
 class PostDetailDTO(PostFeedItemDTO):
-    prefix: str
     content: str
     photos: list[str]
     videos: list[PostVideoOutDTO]
